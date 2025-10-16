@@ -28,7 +28,7 @@ const workspaceController = {
   },
   createWorkspace: async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const userId = req.params.userId as string
+      const userId = req.params.userId as string;
       const { title, account } = req.body;
 
       const isAccountExisted = await workspaceModel.findOne({ account });
@@ -70,8 +70,6 @@ const workspaceController = {
   ) => {
     try {
       const { account } = req.params;
-
-      console.log(account);
 
       const workspace = await workspaceController.fetchWorkspaceByAccount(
         account as string
@@ -159,14 +157,12 @@ const workspaceController = {
     try {
       const { userId, account } = req.params;
 
-      const member = await  workspaceController.fetchWorkspaceMemberById(
-          account as string,
-          userId as string
-        )
+      const member = await workspaceController.fetchWorkspaceMemberById(
+        account as string,
+        userId as string
+      );
       // console.log(member)
-      if (
-       member !== null
-      ) {
+      if (member !== null) {
         return res.status(200).json({
           OK: false,
           message: "User is already member",
