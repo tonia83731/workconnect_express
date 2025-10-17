@@ -3,6 +3,9 @@ import bcrypt from "bcryptjs";
 import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import workspaceModel from "../models/workspaceModel.js";
+import todoModel from "../models/todoModel.js";
+import voteModel from "../models/voteModel.js";
+import resultModel from "../models/resultModel.js";
 import { isSelf } from "../helpers/authHelper.js";
 import { handleError } from "../helpers/errorHelpers.js";
 
@@ -250,14 +253,54 @@ const userController = {
           message: "User not found",
         });
 
+      // remove user from workspace member --> if is admin than cannot delete
+      const adminWorkspaces = await workspaceModel.find({
+        "members.userId": userId,
+        "members.isAdmin": true,
+      });
+      if (adminWorkspaces.length > 0)
+        return res.status(400).json({
+          OK: false,
+          message:
+            "Cannot delete an admin ser. Please transfer admin role first.",
+        });
+
+      await workspaceModel.updateMany(
+        {
+          "members.userId": userId,
+        },
+        {
+          $pull: { members: { userId } },
+        }
+      );
+
+      // remove todo assignment
+      await todoModel.updateMany(
+        {
+          "assignments.userId": userId,
+        },
+        {
+          $pull: {
+            assignments: { userId },
+          },
+        }
+      );
+      // update vote creatorId == userId become null
+      await voteModel.updateMany(
+        {
+          creatorId: userId,
+        },
+        {
+          $set: {
+            creatorId: null,
+          },
+        }
+      );
+      // remove result by userId
+      await resultModel.deleteMany({ userId });
+
       // Delete user
       await user.deleteOne();
-
-      // Remove user from all workspaces
-      await workspaceModel.updateMany(
-        { "members.userId": userId },
-        { $pull: { members: { userId } } }
-      );
 
       return res.status(200).json({
         OK: true,
