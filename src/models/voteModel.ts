@@ -10,7 +10,7 @@ const voteSchema = new Schema(
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      default: null, // allows null
     },
     workspaceId: {
       type: Schema.Types.ObjectId,

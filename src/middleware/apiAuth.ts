@@ -45,7 +45,7 @@ export const workspaceAuthenticated = async (
     });
   }
 
-  return next();
+  next();
 };
 
 export const workspaceAdminAuthenticated = async (

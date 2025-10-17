@@ -1,9 +1,9 @@
 import type { Request, Response, NextFunction } from "express";
-import userModel from "../models/userModel.js";
 import workspaceModel from "../models/workspaceModel.js";
 import workfolderModel from "../models/workfolderModel.js";
 import todoModel from "../models/todoModel.js";
 import workspaceController from "./workspaceController.js";
+import { handleError } from "../helpers/errorHelpers.js";
 
 const todoController = {
   getFoldersByWorkspaceAccount: async (
@@ -23,7 +23,7 @@ const todoController = {
       const workspaceId = workspace._id.toString();
 
       const folders = await workfolderModel
-        .find({workspaceId})
+        .find({ workspaceId })
         .sort({ order: 1 })
         .lean();
 
@@ -44,10 +44,10 @@ const todoController = {
         OK: true,
         data: foldersWithTodos,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   }, // folders + todos
@@ -102,10 +102,10 @@ const todoController = {
         OK: true,
         message: "Folder title updated",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -119,15 +119,16 @@ const todoController = {
           message: "Folder not found",
         });
 
+      await todoModel.deleteMany({ workfolderId: folderId });
       await folder.deleteOne();
       return res.status(200).json({
         OK: true,
-        message: "Folder deleted",
+        message: "Folder and related todo deleted",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -147,46 +148,57 @@ const todoController = {
         OK: true,
         todo,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
   createTodo: async (req: Request, res: Response, next: NextFunction) => {
     try {
+      const { account } = req.params;
+      const workspace = await workspaceModel.findOne({ account });
+      if (!workspace)
+        return res.status(404).json({
+          OK: false,
+          message: "Workspace not found.",
+        });
+
       const {
         title,
-        workspaceId,
         workfolderId,
         status,
         note,
         deadline,
         checklists,
         assignments,
-        order,
       } = req.body;
+
+      const countItems = await todoModel.countDocuments({
+        workspaceId: workspace?._id.toString(),
+        workfolderId,
+      });
 
       const todo = await todoModel.create({
         title,
-        workspaceId,
+        workspaceId: workspace?._id.toString(),
         workfolderId,
         status,
         note,
         deadline,
         checklists,
         assignments,
-        order,
+        order: countItems + 1,
       });
       return res.status(201).json({
         OK: true,
         todo,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -195,14 +207,12 @@ const todoController = {
       const { todoId } = req.params;
       const {
         title,
-        workspaceId,
         workfolderId,
         status,
         note,
         deadline,
         checklists,
         assignments,
-        order,
       } = req.body;
 
       const todo = await todoModel.findById(todoId);
@@ -213,12 +223,10 @@ const todoController = {
         });
       // Basic fields
       todo.title = title ?? todo.title;
-      todo.workspaceId = workspaceId ?? todo.workspaceId;
       todo.workfolderId = workfolderId ?? todo.workfolderId;
       todo.status = status ?? todo.status;
       todo.note = note ?? todo.note;
       todo.deadline = deadline ?? todo.deadline;
-      todo.order = order ?? todo.order;
 
       if (checklists && Array.isArray(checklists)) {
         // Remove all existing checklists and add new ones
@@ -246,10 +254,10 @@ const todoController = {
         OK: true,
         todo,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -267,13 +275,14 @@ const todoController = {
         OK: true,
         message: "Todo deleted",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
+  // need to be fix
   updateTodoFolderAndOrder: async (
     req: Request,
     res: Response,
@@ -343,10 +352,10 @@ const todoController = {
         data: todo,
         message: "Todo folder and order updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },

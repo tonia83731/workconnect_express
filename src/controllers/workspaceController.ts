@@ -1,7 +1,11 @@
 import type { Request, Response, NextFunction } from "express";
-import userModel from "../models/userModel.js";
 import workspaceModel from "../models/workspaceModel.js";
 import type { IWorkspaceMember, IWorkspace } from "../type.js";
+import todoModel from "../models/todoModel.js";
+import workfolderModel from "../models/workfolderModel.js";
+import voteModel from "../models/voteModel.js";
+import resultModel from "../models/resultModel.js";
+import { handleError } from "../helpers/errorHelpers.js";
 
 const workspaceController = {
   getWorkspaceByUserId: async (
@@ -19,10 +23,10 @@ const workspaceController = {
         OK: true,
         workspaces,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -55,10 +59,10 @@ const workspaceController = {
         OK: true,
         workspace,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -138,17 +142,34 @@ const workspaceController = {
     try {
       const { account } = req.params;
 
-      await workspaceModel.findOneAndDelete({ account });
+      const workspace = await workspaceModel.findOne({ account });
+      if (!workspace) {
+        return res.status(404).json({
+          OK: false,
+          message: "Workspace not found.",
+        });
+      }
 
-      return res.status(200).json({ OK: true, message: "Workspace deleted" });
+      const workspaceId = workspace?._id.toString();
+
+      await Promise.all([
+        todoModel.deleteMany({ workspaceId }),
+        workfolderModel.deleteMany({ workspaceId }),
+        voteModel.deleteMany({ workspaceId }),
+        resultModel.deleteMany({ workspaceId }),
+      ]);
+
+      await workspace.deleteOne({ account });
+
+      return res
+        .status(200)
+        .json({ OK: true, message: "Workspace and related items are deleted" });
     } catch (error: any) {
       return res.status(500).json({
         message: error.message(),
       });
     }
   },
-
-  // pending
   userAskEnterWorkspace: async (
     req: Request,
     res: Response,
@@ -212,11 +233,17 @@ const workspaceController = {
         { new: true }
       );
 
+      await todoModel.updateMany(
+        { workspaceId: workspace?._id.toString() },
+        { $pull: { assignments: { userId } } }
+      );
+      await resultModel.deleteMany({ workspaceId: workspace?._id.toString() });
+
       return res.status(200).json({ OK: true, workspace });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -256,10 +283,10 @@ const workspaceController = {
       }
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   }, // isAdmin, isPending

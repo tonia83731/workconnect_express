@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 const Schema = mongoose.Schema;
 
 const resultSchema = new Schema({
+  workspaceId: {
+    type: Schema.Types.ObjectId,
+    ref: "Workspace",
+    required: true,
+  },
   voteId: {
     type: Schema.Types.ObjectId,
     ref: "Vote",

@@ -29,6 +29,7 @@ const todoSchema = new Schema(
     },
     deadline: {
       type: Date,
+      default: null,
     },
     checklists: [
       {

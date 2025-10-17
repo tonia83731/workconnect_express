@@ -4,7 +4,7 @@ import userModel from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import workspaceModel from "../models/workspaceModel.js";
 import { isSelf } from "../helpers/authHelper.js";
-import { platform } from "os";
+import { handleError } from "../helpers/errorHelpers.js";
 
 const userController = {
   register: async (req: Request, res: Response, next: NextFunction) => {
@@ -31,10 +31,10 @@ const userController = {
       return res.status(201).json({
         OK: true,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -61,7 +61,7 @@ const userController = {
       const payload = {
         _id: userJson._id,
         email: userJson.email,
-        platformMode: userJson.platformMode
+        platformMode: userJson.platformMode,
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
@@ -75,10 +75,10 @@ const userController = {
           token,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -97,10 +97,10 @@ const userController = {
         OK: true,
         user,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -123,8 +123,8 @@ const userController = {
           message: "User not found",
         });
 
-      user.firstname = firstname ?? user.firstname
-      user.lastname = lastname ?? user.lastname
+      user.firstname = firstname ?? user.firstname;
+      user.lastname = lastname ?? user.lastname;
       user.email = email ?? user.email;
 
       await user.save();
@@ -136,13 +136,13 @@ const userController = {
           firstname: user.firstname,
           lastname: user.lastname,
           email: user.email,
-          platforMode: user.platformMode
+          platforMode: user.platformMode,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -188,10 +188,10 @@ const userController = {
         OK: true,
         message: "Password updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
@@ -217,8 +217,6 @@ const userController = {
           message: "User not found",
         });
 
-      
-
       user.platformMode = user.platformMode === "dark" ? "light" : "dark";
       await user.save();
 
@@ -226,13 +224,14 @@ const userController = {
         OK: true,
         message: "Platform mode updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
+  // need to be fix
   deleteUserById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tokenUserId = req.user?._id.toString();
@@ -264,10 +263,10 @@ const userController = {
         OK: true,
         message: "User deleted successfully and removed from all workspaces",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },

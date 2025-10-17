@@ -39,8 +39,18 @@ router.use(
   workfolderRouter
 );
 
-router.use("/workspace/:account/todo", authenticated, workspaceAuthenticated, todoRouter);
-router.use("/workspace/:account/vote", authenticated, workspaceAuthenticated, voteRouter);
+router.use(
+  "/workspace/:account/todo",
+  authenticated,
+  workspaceAuthenticated,
+  todoRouter
+);
+router.use(
+  "/workspace/:account/vote",
+  authenticated,
+  workspaceAuthenticated,
+  voteRouter
+);
 router.use(
   "/workspace/:account/vote/admin",
   authenticated,
