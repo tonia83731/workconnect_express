@@ -10,20 +10,44 @@ import { userData } from "./auth.test"
 //     email: "test@example.com",
 //     password: "1234"
 // }
+
+export const setupTestUser = async () => {
+    await request(app).post("/api/auth/register").send(userData)
+    
+    const loginRes = await request(app).post("/api/auth/login").send({
+        email: userData.email,
+        password: userData.password
+    })
+
+    return {
+        userId: loginRes.body.data.id,
+        token: loginRes.body.data.token
+    }
+}
+
+// describe("GET /api/user/:userId/workspace", () => {
+//     let userId: string;
+//     let token: string;
+//     beforeAll(async () => {
+//         await connectDatabase()
+//         const res = await setupTestUser();
+//         userId = res.userId
+//         token = res.token
+//     })
+//     afterAll(async () => {
+//         await disconnectDatabase()
+//     })
+
+//     test("", async () => {})
+// })
 describe("POST /api/user/:userId/workspace", () => {
     let userId: string;
     let token: string;
     beforeAll(async () => {
         await connectDatabase()
-        await request(app).post("/api/auth/register").send(userData)
-    
-        const loginRes = await request(app).post("/api/auth/login").send({
-            email: userData.email,
-            password: userData.password
-        })
-
-        userId = loginRes.body.data.id;
-        token = loginRes.body.data.token
+        const res = await setupTestUser();
+        userId = res.userId
+        token = res.token
     })
     afterAll(async () => {
         await disconnectDatabase()
