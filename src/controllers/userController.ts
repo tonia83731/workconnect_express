@@ -1,13 +1,13 @@
 import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import userModel from "../models/userModel.js";
+import userModel from "../models/userModel";
 import jwt from "jsonwebtoken";
-import workspaceModel from "../models/workspaceModel.js";
-import todoModel from "../models/todoModel.js";
-import voteModel from "../models/voteModel.js";
-import resultModel from "../models/resultModel.js";
-import { isSelf } from "../helpers/authHelper.js";
-import { handleError } from "../helpers/errorHelpers.js";
+import workspaceModel from "../models/workspaceModel";
+import todoModel from "../models/todoModel";
+import voteModel from "../models/voteModel";
+import resultModel from "../models/resultModel";
+import { isSelf } from "../helpers/authHelper";
+import { handleError } from "../helpers/errorHelpers";
 
 const userController = {
   register: async (req: Request, res: Response) => {

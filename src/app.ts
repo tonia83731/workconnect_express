@@ -6,8 +6,8 @@ if (process.env.NODE_ENV !== "production") {
 
 import express, { type Request, type Response } from "express";
 // import mongoose from "mongoose";
-import router from "./routes/index.js";
-import passport from "./config/passport.js";
+import router from "./routes/index";
+import passport from "./config/passport";
 
 const app = express();
 // const port = 8080;
