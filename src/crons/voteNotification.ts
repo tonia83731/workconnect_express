@@ -1,10 +1,10 @@
 import nodeCron from "node-cron";
 import axios from "axios";
 
-import workspaceModel from "../models/workspaceModel.js";
-import voteModel from "../models/voteModel.js";
-import resultModel from "../models/resultModel.js";
-import type { IWorkspace } from "../type.js";
+// import workspaceModel from "../models/workspaceModel";
+import voteModel from "../models/voteModel";
+import resultModel from "../models/resultModel";
+import type { IWorkspace } from "../type";
 
 export const scheduleVoteDueNotifications = () => {
   nodeCron.schedule("0 * * * *", async () => {

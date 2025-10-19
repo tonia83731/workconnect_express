@@ -1,17 +1,16 @@
-import type { Request, Response, NextFunction } from "express";
-import workspaceModel from "../models/workspaceModel.js";
-import type { IWorkspaceMember, IWorkspace } from "../type.js";
-import todoModel from "../models/todoModel.js";
-import workfolderModel from "../models/workfolderModel.js";
-import voteModel from "../models/voteModel.js";
-import resultModel from "../models/resultModel.js";
-import { handleError } from "../helpers/errorHelpers.js";
+import type { Request, Response } from "express";
+import workspaceModel from "../models/workspaceModel";
+import type { IWorkspaceMember, IWorkspace } from "../type";
+import todoModel from "../models/todoModel";
+import workfolderModel from "../models/workfolderModel";
+import voteModel from "../models/voteModel";
+import resultModel from "../models/resultModel";
+import { handleError } from "../helpers/errorHelpers";
 
 const workspaceController = {
   getWorkspaceByUserId: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { userId } = req.params;
@@ -30,7 +29,7 @@ const workspaceController = {
       });
     }
   },
-  createWorkspace: async (req: Request, res: Response, next: NextFunction) => {
+  createWorkspace: async (req: Request, res: Response) => {
     try {
       const userId = req.params.userId as string;
       const { title, account } = req.body;
@@ -69,8 +68,7 @@ const workspaceController = {
 
   getWorkspaceByAccount: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { account } = req.params;
@@ -92,8 +90,7 @@ const workspaceController = {
 
   updateWorkspaceTitleByAccount: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { account } = req.params;
@@ -106,16 +103,15 @@ const workspaceController = {
       );
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: handleError(error),
       });
     }
   },
   updateWorkspaceSlackByAccount: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { account } = req.params;
@@ -128,16 +124,15 @@ const workspaceController = {
       );
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: handleError(error),
       });
     }
   },
   deleteWorkspaceByAccount: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { account } = req.params;
@@ -164,16 +159,15 @@ const workspaceController = {
       return res
         .status(200)
         .json({ OK: true, message: "Workspace and related items are deleted" });
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: handleError(error),
       });
     }
   },
   userAskEnterWorkspace: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { userId, account } = req.params;
@@ -203,17 +197,16 @@ const workspaceController = {
       );
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: handleError(error),
       });
     }
   },
 
   removeMemberFromWorkspace: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { userId, account } = req.params;
@@ -249,8 +242,7 @@ const workspaceController = {
   },
   updateMemberStatusInWorkspace: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { userId, account } = req.params;
@@ -305,8 +297,8 @@ const workspaceController = {
 
       if (!workspace) return null;
       return workspace as IWorkspace;
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to fetch workspace by account");
+    } catch (error:unknown) {
+      throw new Error(error instanceof Error && error.message || "Failed to fetch workspace by account");
     }
   },
 
@@ -326,8 +318,8 @@ const workspaceController = {
         return null;
 
       return workspace.members[0] as IWorkspaceMember;
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to check member");
+    } catch (error: unknown) {
+      throw new Error(error instanceof Error && error.message  || "Failed to check member");
     }
   },
 };

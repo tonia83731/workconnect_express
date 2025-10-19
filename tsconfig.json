@@ -42,6 +42,6 @@
     // "moduleDetection": "force",
     // "skipLibCheck": true,
   },
-  "include": ["src/**/*.ts", "*.ts"],
-  "exclude": ["dist"]
+  "include": ["src/**/*.ts", "*.ts", "jest.config.js"],
+  "exclude": ["dist", "document", "node_modules"]
 }

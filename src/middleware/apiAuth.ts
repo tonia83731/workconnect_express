@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
-import passport from "../config/passport.js";
-import workspaceModel from "../models/workspaceModel.js";
-import type { IUser } from "../type.js";
+import passport from "../config/passport";
+import workspaceModel from "../models/workspaceModel";
+import type { IUser } from "../type";
 
 export const authenticated = (
   req: Request,
@@ -11,7 +11,7 @@ export const authenticated = (
   passport.authenticate(
     "jwt",
     { session: false },
-    (err: any, user: IUser | null) => {
+    (err: unknown, user: IUser | null) => {
       if (err || !user) {
         return res.status(403).json({
           OK: false,
@@ -31,7 +31,7 @@ export const workspaceAuthenticated = async (
   next: NextFunction
 ) => {
   const userId = req.user?._id;
-  const account = req.params.account as String;
+  const account = req.params.account as string;
 
   const workspace = await workspaceModel.findOne({ account }).lean();
   const isMember = workspace?.members.find(

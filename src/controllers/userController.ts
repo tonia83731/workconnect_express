@@ -1,16 +1,16 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import userModel from "../models/userModel.js";
+import userModel from "../models/userModel";
 import jwt from "jsonwebtoken";
-import workspaceModel from "../models/workspaceModel.js";
-import todoModel from "../models/todoModel.js";
-import voteModel from "../models/voteModel.js";
-import resultModel from "../models/resultModel.js";
-import { isSelf } from "../helpers/authHelper.js";
-import { handleError } from "../helpers/errorHelpers.js";
+import workspaceModel from "../models/workspaceModel";
+import todoModel from "../models/todoModel";
+import voteModel from "../models/voteModel";
+import resultModel from "../models/resultModel";
+import { isSelf } from "../helpers/authHelper";
+import { handleError } from "../helpers/errorHelpers";
 
 const userController = {
-  register: async (req: Request, res: Response, next: NextFunction) => {
+  register: async (req: Request, res: Response) => {
     try {
       const { firstname, lastname, email, password } = req.body;
 
@@ -41,7 +41,7 @@ const userController = {
       });
     }
   },
-  login: async (req: Request, res: Response, next: NextFunction) => {
+  login: async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
 
@@ -86,7 +86,7 @@ const userController = {
     }
   },
 
-  getUserById: async (req: Request, res: Response, next: NextFunction) => {
+  getUserById: async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       const user = await userModel.findById(userId).select("-password");
@@ -107,7 +107,7 @@ const userController = {
       });
     }
   },
-  updateUserById: async (req: Request, res: Response, next: NextFunction) => {
+  updateUserById: async (req: Request, res: Response) => {
     try {
       const { firstname, lastname, email } = req.body;
       const tokenUserId = req.user?._id.toString();
@@ -151,8 +151,7 @@ const userController = {
   },
   updateUserPasswordById: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { originalPassword, newPassword } = req.body;
@@ -200,8 +199,7 @@ const userController = {
   },
   updateUserPlatformModeById: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const tokenUserId = req.user?._id.toString();
@@ -235,7 +233,7 @@ const userController = {
     }
   },
   // need to be fix
-  deleteUserById: async (req: Request, res: Response, next: NextFunction) => {
+  deleteUserById: async (req: Request, res: Response) => {
     try {
       const tokenUserId = req.user?._id.toString();
       const userId = req.params.userId as string;

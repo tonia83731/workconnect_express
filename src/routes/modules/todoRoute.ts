@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router({ mergeParams: true });
 
-import todoController from "../../controllers/todoController.js";
+import todoController from "../../controllers/todoController";
 
 router.post("", todoController.createTodo);
 router.get("/:todoId", todoController.getTodoById);
