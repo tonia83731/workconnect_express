@@ -4,7 +4,7 @@ import app from "../app"
 import { connectDatabase, disconnectDatabase } from "./setup"
 // import userModel from "../models/userModel"
 
-const userData = {
+export const userData = {
     firstname: "Test",
     lastname: "User",
     email: "test@example.com",
