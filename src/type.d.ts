@@ -15,7 +15,7 @@ export interface IUser {
   lastname: string;
   email: string;
   password: string;
-  platformMode: "dark" | "light"
+  platformMode: "dark" | "light";
 }
 
 export interface IWorkspace {
@@ -48,7 +48,9 @@ export interface ITodo {
   note?: string; // optional if not required
   deadline?: Date; // optional if not set
   checklists?: TodoChecklistType[]; // optional
-  assignments?: string[] | ObjectId[]; // optional
+  assignments?: {
+    userId: ObjectId | string;
+  }[]; // optional
   order: number;
 }
 
