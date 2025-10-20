@@ -1,15 +1,14 @@
-import type { Request, Response, NextFunction } from "express";
-import workspaceModel from "../models/workspaceModel.js";
-import workfolderModel from "../models/workfolderModel.js";
-import todoModel from "../models/todoModel.js";
-import workspaceController from "./workspaceController.js";
-import { handleError } from "../helpers/errorHelpers.js";
+import type { Request, Response } from "express";
+import workspaceModel from "../models/workspaceModel";
+import workfolderModel from "../models/workfolderModel";
+import todoModel from "../models/todoModel";
+import workspaceController from "./workspaceController";
+import { handleError } from "../helpers/errorHelpers";
 
 const todoController = {
   getFoldersByWorkspaceAccount: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { account } = req.params;
@@ -51,7 +50,7 @@ const todoController = {
       });
     }
   }, // folders + todos
-  createFolder: async (req: Request, res: Response, next: NextFunction) => {
+  createFolder: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const { title } = req.body;
@@ -82,8 +81,7 @@ const todoController = {
   },
   updateFolderNameById: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { folderId } = req.params;
@@ -109,7 +107,7 @@ const todoController = {
       });
     }
   },
-  deleteFolderById: async (req: Request, res: Response, next: NextFunction) => {
+  deleteFolderById: async (req: Request, res: Response) => {
     try {
       const { folderId } = req.params;
       const folder = await workfolderModel.findById(folderId);
@@ -133,7 +131,7 @@ const todoController = {
     }
   },
 
-  getTodoById: async (req: Request, res: Response, next: NextFunction) => {
+  getTodoById: async (req: Request, res: Response) => {
     try {
       const { todoId } = req.params;
       const todo = await todoModel.findById(todoId);
@@ -155,7 +153,7 @@ const todoController = {
       });
     }
   },
-  createTodo: async (req: Request, res: Response, next: NextFunction) => {
+  createTodo: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const workspace = await workspaceModel.findOne({ account });
@@ -202,7 +200,7 @@ const todoController = {
       });
     }
   },
-  updateTodoById: async (req: Request, res: Response, next: NextFunction) => {
+  updateTodoById: async (req: Request, res: Response) => {
     try {
       const { todoId } = req.params;
       const {
@@ -261,7 +259,7 @@ const todoController = {
       });
     }
   },
-  deleteTodoById: async (req: Request, res: Response, next: NextFunction) => {
+  deleteTodoById: async (req: Request, res: Response) => {
     try {
       const { todoId } = req.params;
       const todo = await todoModel.findById(todoId);
@@ -285,8 +283,7 @@ const todoController = {
   // need to be fix
   updateTodoFolderAndOrder: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { todoId } = req.params;

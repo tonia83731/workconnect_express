@@ -1,8 +1,8 @@
 import express from "express";
 const router = express.Router();
 
-import userController from "../../controllers/userController.js";
-import workspaceController from "../../controllers/workspaceController.js";
+import userController from "../../controllers/userController";
+import workspaceController from "../../controllers/workspaceController";
 
 router.post(
   "/:userId/workspace/:account",

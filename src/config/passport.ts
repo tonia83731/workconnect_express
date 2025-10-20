@@ -6,9 +6,8 @@ if (process.env.NODE_ENV !== "production") {
 
 import passport from "passport";
 import passportJWT from "passport-jwt";
-import bcrypt from "bcryptjs";
 
-import userModel from "../models/userModel.js";
+import userModel from "../models/userModel";
 
 const JWTStrategy = passportJWT.Strategy;
 const ExtractJWT = passportJWT.ExtractJwt;

@@ -1,15 +1,14 @@
-import type { Request, Response, NextFunction } from "express";
-import voteModel from "../models/voteModel.js";
-import resultModel from "../models/resultModel.js";
-import workspaceController from "./workspaceController.js";
-import workspaceModel from "../models/workspaceModel.js";
-import { handleError } from "../helpers/errorHelpers.js";
+import type { Request, Response } from "express";
+import voteModel from "../models/voteModel";
+import resultModel from "../models/resultModel";
+import workspaceController from "./workspaceController";
+import workspaceModel from "../models/workspaceModel";
+import { handleError } from "../helpers/errorHelpers";
 
 const voteController = {
   getWorkspaceVoteByWorkspaceAccount: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       // const userId = req.user?._id as string;
@@ -40,7 +39,7 @@ const voteController = {
       });
     }
   },
-  getVoteById: async (req: Request, res: Response, next: NextFunction) => {
+  getVoteById: async (req: Request, res: Response) => {
     try {
       const { voteId } = req.params;
 
@@ -62,7 +61,7 @@ const voteController = {
       });
     }
   },
-  createVote: async (req: Request, res: Response, next: NextFunction) => {
+  createVote: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const workspace = await workspaceModel.findOne({ account });
@@ -89,7 +88,7 @@ const voteController = {
       });
     }
   },
-  updateVoteById: async (req: Request, res: Response, next: NextFunction) => {
+  updateVoteById: async (req: Request, res: Response) => {
     try {
       const { voteId } = req.params;
       const { title, options, dueDate } = req.body;
@@ -114,7 +113,7 @@ const voteController = {
       });
     }
   },
-  deleteVoteById: async (req: Request, res: Response, next: NextFunction) => {
+  deleteVoteById: async (req: Request, res: Response) => {
     try {
       const { voteId } = req.params;
 
@@ -138,7 +137,7 @@ const voteController = {
     }
   },
 
-  submitVoteResult: async (req: Request, res: Response, next: NextFunction) => {
+  submitVoteResult: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const { voteId, userId, option } = req.body;
@@ -178,8 +177,7 @@ const voteController = {
   },
   updateVoteResultById: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { resultId } = req.params;
@@ -217,8 +215,7 @@ const voteController = {
   },
   getResultsForVotebyVoteId: async (
     req: Request,
-    res: Response,
-    next: NextFunction
+    res: Response
   ) => {
     try {
       const { voteId } = req.params;
