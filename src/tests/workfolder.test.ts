@@ -9,22 +9,20 @@ import {
   userData,
   workspaceData,
   workfolderData,
+  setupTestFolder,
+  todoData,
 } from "./setup";
 import mongoose from "mongoose";
 
 describe("POST /api/workspace/:account/workfolder", () => {
-  let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   beforeAll(async () => {
     await connectDatabase();
     const res = await setupTestWorkspace(userData, workspaceData);
 
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
   });
   afterAll(async () => {
@@ -57,17 +55,13 @@ describe("POST /api/workspace/:account/workfolder", () => {
 });
 
 describe("PATCH /api/workspace/:account/workfolder/:folderId/title", () => {
-  let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   beforeAll(async () => {
     await connectDatabase();
     const res = await setupTestWorkspace(userData, workspaceData);
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
   });
   afterAll(async () => {
@@ -103,3 +97,39 @@ describe("PATCH /api/workspace/:account/workfolder/:folderId/title", () => {
     expect(res.status).toBe(404);
   });
 });
+
+describe("DELETE /api/workspace/:account/workfolder/:folderId", () => {
+  let token: string;
+  let account: string;
+  let folderId: string
+
+  beforeAll(async () => {
+    await connectDatabase();
+    const res = await setupTestFolder(userData, workspaceData, workfolderData);
+
+    todoData.workfolderId = res.folderId;
+
+    await request(app)
+      .post(`/api/workspace/${account}/todo`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(todoData);
+
+    token = res.token;
+    account = res.account;
+    folderId = res.folderId
+  });
+  afterAll(async () => {
+    await disconnectDatabase();
+  });
+
+  test("Successfully delete folder and related todo", async () => {
+    await request(app).delete(`/api/workspace/${account}/workfolder/${folderId}`)
+    .set("Authorization", `Bearer ${token}`)
+
+    const folderRes = await request(app).get(`/api/workspace/${account}/workfolder/${folderId}`).set("Authorization", `Bearer ${token}`)
+    const todoRes = await request(app).get(`/api/workspace/${account}/workfolder/${folderId}/todos`).set("Authorization", `Bearer ${token}`)
+
+    expect(folderRes.status).toBe(404)
+    expect(todoRes.body.todos.length).toBe(0)
+  })
+})

@@ -11,12 +11,10 @@ import {
   todoData,
   setupTestUser,
 } from "./setup";
-import mongoose from "mongoose";
 
 describe("POST /api/workspace/:account/todo", () => {
   let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
   let folderId: string;
 
@@ -26,7 +24,6 @@ describe("POST /api/workspace/:account/todo", () => {
 
     userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
     folderId = res.folderId;
   });
@@ -51,7 +48,6 @@ describe("PUT /api/workspace/:account/todo/:todoId", () => {
   let userId: string;
   let token: string;
   let user2Id: string;
-  let workspaceId: string;
   let account: string;
   let folderId: string;
   let todoId: string;
@@ -68,7 +64,6 @@ describe("PUT /api/workspace/:account/todo/:todoId", () => {
 
     userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
     folderId = res.folderId;
     user2Id = userRes.userId;
@@ -143,7 +138,6 @@ describe("PUT /api/workspace/:account/todo/:todoId", () => {
 describe("DELETE /api/workspace/:account/todo/:todoId", () => {
   let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
   let folderId: string;
 
@@ -153,7 +147,6 @@ describe("DELETE /api/workspace/:account/todo/:todoId", () => {
 
     userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
     folderId = res.folderId;
   });

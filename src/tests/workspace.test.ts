@@ -4,25 +4,25 @@ import app from "../app";
 import {
   connectDatabase,
   disconnectDatabase,
+  setupTestFolder,
   setupTestUser,
   setupTestWorkspace,
+  todoData,
   userData,
+  workfolderData,
   workspaceData,
 } from "./setup";
+import { IWorkspaceMember } from "../type";
 
 describe("GET /api/workspace/:account", () => {
-  let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   beforeEach(async () => {
     await connectDatabase();
     const res = await setupTestWorkspace(userData, workspaceData);
 
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
   });
   afterEach(async () => {
@@ -54,18 +54,15 @@ describe("GET /api/workspace/:account", () => {
 });
 
 describe("PATCH /api/workspace/admin/:account/title", () => {
-  let userId: string;
+
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   beforeAll(async () => {
     await connectDatabase();
     const res = await setupTestWorkspace(userData, workspaceData);
 
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
   });
   afterAll(async () => {
@@ -103,13 +100,10 @@ describe("PATCH /api/workspace/admin/:account/title", () => {
 });
 
 describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
-  let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   let user2Id: string;
-  let token2: string;
 
   beforeAll(async () => {
     await connectDatabase();
@@ -126,13 +120,10 @@ describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
       .post(`/api/user/${userRes.userId}/workspace/${res.account}`)
       .set("Authorization", `Bearer ${userRes.token}`);
 
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
 
     user2Id = userRes.userId;
-    token2 = userRes.token;
   });
   afterAll(async () => {
     await disconnectDatabase();
@@ -147,7 +138,7 @@ describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
       });
 
     const member = res.body.workspace.members.find(
-      (m: any) => m.userId === user2Id
+      (m: IWorkspaceMember) => m.userId === user2Id
     );
 
     expect(res.status).toBe(200);
@@ -163,7 +154,7 @@ describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
       });
 
     const member = res.body.workspace.members.find(
-      (m: any) => m.userId === user2Id
+      (m: IWorkspaceMember) => m.userId === user2Id
     );
 
     expect(res.status).toBe(200);
@@ -180,7 +171,7 @@ describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
       });
 
     const member = res.body.workspace.members.find(
-      (m: any) => m.userId === user2Id
+      (m: IWorkspaceMember) => m.userId === user2Id
     );
 
     expect(res.status).toBe(200);
@@ -191,9 +182,7 @@ describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
 });
 
 describe("DELETE /api/workspace/admin/:account", () => {
-  let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   let user2Id: string;
@@ -210,9 +199,7 @@ describe("DELETE /api/workspace/admin/:account", () => {
       password: "123",
     });
 
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
 
     user2Id = userRes.userId;
@@ -250,3 +237,51 @@ describe("DELETE /api/workspace/admin/:account", () => {
     expect(res.status).toBe(404);
   });
 });
+
+
+describe("DELETE /api/workspace/:account", () => {
+  let token: string;
+  let token2: string
+  let account: string;
+
+  beforeEach(async () => {
+    await connectDatabase();
+    const res = await setupTestFolder(userData, workspaceData, workfolderData);
+    const user2Res = await setupTestUser({
+      firstname: "Non User",
+      lastname: "Test",
+      email: "nuser.t@example.com",
+      password: "123",
+    });
+    
+    todoData.workfolderId = res.folderId;
+
+    
+    token = res.token;
+    account = res.account;
+    token2 = user2Res.token
+    await request(app)
+      .post(`/api/workspace/${account}/todo`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(todoData);
+    });
+  afterEach(async () => {
+    await disconnectDatabase();
+  });
+
+  test("Successfully delete workspace", async () => {
+    await request(app).delete(`/api/workspace/admin/${account}`).set("Authorization", `Bearer ${token}`)
+
+    const workspaceRes = await request(app)
+      .get(`/api/workspace/${account}`)
+      .set("Authorization", `Bearer ${token}`)
+
+    expect(workspaceRes.status).toBe(403)
+    // because members is deleted so cannot check user role --> 403
+  })
+  test("Return 403 if not admin", async () => {
+    const res = await request(app).delete(`/api/workspace/admin/${account}`).set("Authorization", `Bearer ${token2}`)
+
+    expect(res.status).toBe(403)
+  })
+})

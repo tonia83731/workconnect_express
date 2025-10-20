@@ -50,6 +50,28 @@ const todoController = {
       });
     }
   }, // folders + todos
+  getFoldersById: async (req: Request, res: Response) => {
+    try {
+      const {folderId} = req.params
+      const folder = await workfolderModel.findById(folderId)
+
+      if (!folder) return res.status(404).json({
+        OK: false,
+        message: "Folder not found"
+      })
+
+      return res.status(200).json({
+        OK: true,
+        folder
+    })
+    }catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        OK: false,
+        message: error,
+      });
+    }
+  },
   createFolder: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
@@ -123,6 +145,22 @@ const todoController = {
         OK: true,
         message: "Folder and related todo deleted",
       });
+    } catch (error: unknown) {
+      return res.status(500).json({
+        OK: false,
+        message: handleError(error),
+      });
+    }
+  },
+
+  getTodoByFolderId: async (req: Request, res: Response) => {
+    try {
+      const {folderId} = req.params
+      const todos = await todoModel.find({workfolderId: folderId})
+      return res.status(200).json({
+        OK: true,
+        todos
+      })
     } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
