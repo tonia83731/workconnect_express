@@ -5,7 +5,9 @@ import {
   connectDatabase,
   disconnectDatabase,
   setupTestUser,
+  setupTestWorkspace,
   userData,
+  workspaceData,
 } from "./setup";
 
 describe("PUT /api/user/:userId", () => {
@@ -170,6 +172,60 @@ describe("POST /api/user/:userId/workspace", () => {
       });
 
     expect(res.status).toBe(400);
+    expect(res.body.OK).toBe(false);
+  });
+});
+
+describe("POST /api/user/:userId/workspace/:account", () => {
+  //   let userId: string;
+  //   let token: string;
+  //   let workspaceId: string;
+  let account: string;
+
+  let user2Id: string;
+  let token2: string;
+
+  beforeEach(async () => {
+    await connectDatabase();
+    const res = await setupTestWorkspace(userData, workspaceData);
+
+    const user2Res = await setupTestUser({
+      firstname: "Enter",
+      lastname: "User",
+      email: "enter.u@example.com",
+      password: "123",
+    });
+
+    // userId = res.userId;
+    // token = res.token;
+    // workspaceId = res.workspaceId;
+    account = res.account;
+
+    user2Id = user2Res.userId;
+    token2 = user2Res.token;
+  });
+  afterEach(async () => {
+    await disconnectDatabase();
+  });
+  test("Successfully adds a new user request to join", async () => {
+    const res = await request(app)
+      .post(`/api/user/${user2Id}/workspace/${account}`)
+      .set("Authorization", `Bearer ${token2}`);
+
+    expect(res.status).toBe(200);
+    expect(
+      res.body.workspace.members.some((m: any) => m.userId === user2Id)
+    ).toBe(true);
+  });
+  test("User is already a member (pending)", async () => {
+    await request(app)
+      .post(`/api/user/${user2Id}/workspace/${account}`)
+      .set("Authorization", `Bearer ${token2}`);
+    const res = await request(app)
+      .post(`/api/user/${user2Id}/workspace/${account}`)
+      .set("Authorization", `Bearer ${token2}`);
+
+    expect(res.status).toBe(200);
     expect(res.body.OK).toBe(false);
   });
 });

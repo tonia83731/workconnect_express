@@ -64,13 +64,16 @@ export const setupTestWorkspace = async (
 
   const workspaceRes = await request(app)
     .post(`/api/user/${userRes.userId}/workspace`)
-    .set("Autorization", `Bearer ${userRes.token}`)
+    .set("Authorization", `Bearer ${userRes.token}`)
     .send(workspaceData);
+
+  //   console.log(workspaceRes.body);
 
   return {
     userId: userRes.userId,
     token: userRes.token,
-    workspaceId: workspaceRes.body.workspace._id,
+    workspaceId: workspaceRes.body.workspace.id,
     account: workspaceRes.body.workspace.account,
+    // members: workspaceRes.body.workspace.members,
   };
 };

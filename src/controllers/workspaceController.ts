@@ -8,10 +8,7 @@ import resultModel from "../models/resultModel";
 import { handleError } from "../helpers/errorHelpers";
 
 const workspaceController = {
-  getWorkspaceByUserId: async (
-    req: Request,
-    res: Response
-  ) => {
+  getWorkspaceByUserId: async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       const workspaces = await workspaceModel
@@ -66,10 +63,7 @@ const workspaceController = {
     }
   },
 
-  getWorkspaceByAccount: async (
-    req: Request,
-    res: Response
-  ) => {
+  getWorkspaceByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
 
@@ -88,10 +82,7 @@ const workspaceController = {
     }
   },
 
-  updateWorkspaceTitleByAccount: async (
-    req: Request,
-    res: Response
-  ) => {
+  updateWorkspaceTitleByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const { title } = req.body;
@@ -109,10 +100,7 @@ const workspaceController = {
       });
     }
   },
-  updateWorkspaceSlackByAccount: async (
-    req: Request,
-    res: Response
-  ) => {
+  updateWorkspaceSlackByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const { slackUrl } = req.body;
@@ -130,10 +118,7 @@ const workspaceController = {
       });
     }
   },
-  deleteWorkspaceByAccount: async (
-    req: Request,
-    res: Response
-  ) => {
+  deleteWorkspaceByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
 
@@ -165,10 +150,7 @@ const workspaceController = {
       });
     }
   },
-  userAskEnterWorkspace: async (
-    req: Request,
-    res: Response
-  ) => {
+  userAskEnterWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
 
@@ -177,10 +159,17 @@ const workspaceController = {
         userId as string
       );
       // console.log(member)
-      if (member !== null) {
+      if (member !== null && !member.isPending) {
         return res.status(200).json({
           OK: false,
           message: "User is already member",
+        });
+      }
+
+      if (member !== null && member.isPending) {
+        return res.status(200).json({
+          OK: false,
+          message: "Please wait the admin to approve",
         });
       }
 
@@ -204,10 +193,7 @@ const workspaceController = {
     }
   },
 
-  removeMemberFromWorkspace: async (
-    req: Request,
-    res: Response
-  ) => {
+  removeMemberFromWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
 
@@ -240,17 +226,14 @@ const workspaceController = {
       });
     }
   },
-  updateMemberStatusInWorkspace: async (
-    req: Request,
-    res: Response
-  ) => {
+  updateMemberStatusInWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
       const { isAdmin, isPending } = req.body;
 
       let workspace;
 
-      if (isAdmin) {
+      if (isAdmin !== undefined) {
         workspace = await workspaceModel.findOneAndUpdate(
           { account, "members.userId": userId },
           {
@@ -262,7 +245,7 @@ const workspaceController = {
         );
       }
 
-      if (isPending) {
+      if (isPending !== undefined) {
         workspace = await workspaceModel.findOneAndUpdate(
           { account, "members.userId": userId },
           {
@@ -298,7 +281,10 @@ const workspaceController = {
       if (!workspace) return null;
       return workspace as IWorkspace;
     } catch (error: unknown) {
-      throw new Error(error instanceof Error && error.message || "Failed to fetch workspace by account");
+      throw new Error(
+        (error instanceof Error && error.message) ||
+          "Failed to fetch workspace by account"
+      );
     }
   },
 
@@ -319,7 +305,9 @@ const workspaceController = {
 
       return workspace.members[0] as IWorkspaceMember;
     } catch (error: unknown) {
-      throw new Error(error instanceof Error && error.message || "Failed to check member");
+      throw new Error(
+        (error instanceof Error && error.message) || "Failed to check member"
+      );
     }
   },
 };
