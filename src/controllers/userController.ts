@@ -234,7 +234,6 @@ const userController = {
       });
     }
   },
-  // need to be fix
   deleteUserById: async (req: Request, res: Response, next: NextFunction) => {
     try {
       const tokenUserId = req.user?._id.toString();
