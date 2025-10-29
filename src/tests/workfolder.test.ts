@@ -10,6 +10,8 @@ import {
   workspaceData,
   workfolderData,
   clearDatabase,
+  setupTestFolder,
+  todoData,
 } from "./setup";
 import mongoose from "mongoose";
 
@@ -93,5 +95,41 @@ describe("PATCH /api/workspace/:account/workfolder/:folderId/title", () => {
       });
 
     expect(res.status).toBe(404);
+  });
+});
+
+describe("DELETE /api/workspace/:account/workfolder/:folderId", () => {
+  let folderId: string;
+
+  beforeEach(async () => {
+    const res = await request(app)
+      .post(`/api/workspace/${account}/workfolder`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(workfolderData);
+
+    todoData.workfolderId = res.body.folder._id;
+
+    await request(app)
+      .post(`/api/workspace/${account}/todo`)
+      .set("Authorization", `Bearer ${token}`)
+      .send(todoData);
+
+    folderId = res.body.folder._id;
+  });
+
+  test("Successfully delete folder and related todo", async () => {
+    await request(app)
+      .delete(`/api/workspace/${account}/workfolder/${folderId}`)
+      .set("Authorization", `Bearer ${token}`);
+
+    const folderRes = await request(app)
+      .get(`/api/workspace/${account}/workfolder/${folderId}`)
+      .set("Authorization", `Bearer ${token}`);
+    const todoRes = await request(app)
+      .get(`/api/workspace/${account}/workfolder/${folderId}/todos`)
+      .set("Authorization", `Bearer ${token}`);
+
+    expect(folderRes.status).toBe(404);
+    expect(todoRes.body.todos.length).toBe(0);
   });
 });

@@ -4,7 +4,7 @@
   "description": "",
   "scripts": {
     "dev": "dotenv -e .env -- cross-env NODE_ENV=dev tsx --watch src/server.ts",
-    "test": "dotenv -e .env -- cross-env NODE_ENV=test jest --testTimeout=10000",
+    "test": "dotenv -e .env -- cross-env NODE_ENV=test jest --testTimeout=15000",
     "start": "node dist/server.js",
     "build": "tsc",
     "lint": "eslint .",

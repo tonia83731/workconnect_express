@@ -10,6 +10,7 @@ import {
   userData,
   workspaceData,
 } from "./setup";
+import { IWorkspaceMember } from "../type";
 
 beforeAll(async () => {
   await connectDatabase();
@@ -205,7 +206,7 @@ describe("POST /api/user/:userId/workspace/:account", () => {
 
     expect(res.status).toBe(200);
     expect(
-      res.body.workspace.members.some((m: any) => m.userId === user2Id)
+      res.body.workspace.members.some((m: IWorkspaceMember) => m.userId === user2Id)
     ).toBe(true);
   });
   test("User is already a member (pending)", async () => {

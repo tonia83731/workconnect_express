@@ -1,6 +1,3 @@
-import { JwtPayload } from "jsonwebtoken";
-import type { Interface } from "readline";
-
 declare global {
   namespace Express {
     interface Request {
