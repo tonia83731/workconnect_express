@@ -86,6 +86,13 @@ export const disconnectDatabase = async () => {
   await mongoServer.stop();
 };
 
+export const clearDatabase = async () => {
+  const collections = mongoose.connection.collections;
+  for (let key in collections) {
+    await collections[key].deleteMany({});
+  }
+};
+
 export const setupTestUser = async (data: UserDataType) => {
   await request(app).post("/api/auth/register").send(data);
 

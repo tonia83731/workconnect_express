@@ -2,6 +2,7 @@ import request from "supertest";
 import app from "../app";
 
 import {
+  clearDatabase,
   connectDatabase,
   disconnectDatabase,
   setupTestUser,
@@ -10,24 +11,33 @@ import {
   workspaceData,
 } from "./setup";
 
+let userId: string;
+let token: string;
+let workspaceId: string;
+let account: string;
+
+beforeAll(async () => {
+  await connectDatabase();
+});
+
+afterAll(async () => {
+  await disconnectDatabase();
+});
+
+beforeEach(async () => {
+  const res = await setupTestWorkspace(userData, workspaceData);
+
+  userId = res.userId;
+  token = res.token;
+  workspaceId = res.workspaceId;
+  account = res.account;
+});
+
+afterEach(async () => {
+  await clearDatabase();
+});
+
 describe("POST /api/workspace/:account/vote", () => {
-  let userId: string;
-  let token: string;
-  let workspaceId: string;
-  let account: string;
-
-  beforeEach(async () => {
-    await connectDatabase();
-    const res = await setupTestWorkspace(userData, workspaceData);
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-  });
-  afterEach(async () => {
-    await disconnectDatabase();
-  });
-
   test("Successfully create vote", async () => {
     const res = await request(app)
       .post(`/api/workspace/${account}/vote`)
@@ -55,23 +65,6 @@ describe("POST /api/workspace/:account/vote", () => {
 });
 
 describe("PUT /api/workspace/:account/vote/:voteId", () => {
-  let userId: string;
-  let token: string;
-  let workspaceId: string;
-  let account: string;
-
-  beforeEach(async () => {
-    await connectDatabase();
-    const res = await setupTestWorkspace(userData, workspaceData);
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-  });
-  afterEach(async () => {
-    await disconnectDatabase();
-  });
-
   test("Successfully update vote", async () => {
     const res = await request(app)
       .post(`/api/workspace/${account}/vote`)
@@ -119,23 +112,6 @@ describe("PUT /api/workspace/:account/vote/:voteId", () => {
 });
 
 describe("DELETE /api/workspace/:account/vote/admin/:voteId", () => {
-  let userId: string;
-  let token: string;
-  let workspaceId: string;
-  let account: string;
-
-  beforeEach(async () => {
-    await connectDatabase();
-    const res = await setupTestWorkspace(userData, workspaceData);
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-  });
-  afterEach(async () => {
-    await disconnectDatabase();
-  });
-
   test("Successfully delete vote", async () => {
     const res = await request(app)
       .post(`/api/workspace/${account}/vote`)

@@ -2,6 +2,7 @@ import request from "supertest";
 import app from "../app";
 
 import {
+  clearDatabase,
   connectDatabase,
   disconnectDatabase,
   setupTestUser,
@@ -10,6 +11,18 @@ import {
   workspaceData,
 } from "./setup";
 
+beforeAll(async () => {
+  await connectDatabase();
+});
+
+afterAll(async () => {
+  await disconnectDatabase();
+});
+
+afterEach(async () => {
+  await clearDatabase();
+});
+
 describe("GET /api/workspace/:account", () => {
   let userId: string;
   let token: string;
@@ -17,16 +30,12 @@ describe("GET /api/workspace/:account", () => {
   let account: string;
 
   beforeEach(async () => {
-    await connectDatabase();
     const res = await setupTestWorkspace(userData, workspaceData);
 
     userId = res.userId;
     token = res.token;
     workspaceId = res.workspaceId;
     account = res.account;
-  });
-  afterEach(async () => {
-    await disconnectDatabase();
   });
 
   test("Successfully get workspace info", async () => {
@@ -59,17 +68,13 @@ describe("PATCH /api/workspace/admin/:account/title", () => {
   let workspaceId: string;
   let account: string;
 
-  beforeAll(async () => {
-    await connectDatabase();
+  beforeEach(async () => {
     const res = await setupTestWorkspace(userData, workspaceData);
 
     userId = res.userId;
     token = res.token;
     workspaceId = res.workspaceId;
     account = res.account;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
   });
 
   test("Successfully update workspace title", async () => {
@@ -103,16 +108,13 @@ describe("PATCH /api/workspace/admin/:account/title", () => {
 });
 
 describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
-  let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   let user2Id: string;
   let token2: string;
 
-  beforeAll(async () => {
-    await connectDatabase();
+  beforeEach(async () => {
     const res = await setupTestWorkspace(userData, workspaceData);
 
     const userRes = await setupTestUser({
@@ -126,16 +128,11 @@ describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
       .post(`/api/user/${userRes.userId}/workspace/${res.account}`)
       .set("Authorization", `Bearer ${userRes.token}`);
 
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
 
     user2Id = userRes.userId;
     token2 = userRes.token;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
   });
 
   test("Update member pending status successfully", async () => {
@@ -191,16 +188,13 @@ describe("PATCH /api/workspace/admin/:account/:userId/member-status", () => {
 });
 
 describe("DELETE /api/workspace/admin/:account", () => {
-  let userId: string;
   let token: string;
-  let workspaceId: string;
   let account: string;
 
   let user2Id: string;
   let token2: string;
 
-  beforeAll(async () => {
-    await connectDatabase();
+  beforeEach(async () => {
     const res = await setupTestWorkspace(userData, workspaceData);
 
     const userRes = await setupTestUser({
@@ -210,16 +204,11 @@ describe("DELETE /api/workspace/admin/:account", () => {
       password: "123",
     });
 
-    userId = res.userId;
     token = res.token;
-    workspaceId = res.workspaceId;
     account = res.account;
 
     user2Id = userRes.userId;
     token2 = userRes.token;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
   });
 
   test("Remove member successfully", async () => {

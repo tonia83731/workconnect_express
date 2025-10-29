@@ -10,30 +10,38 @@ import {
   workfolderData,
   todoData,
   setupTestUser,
+  clearDatabase,
 } from "./setup";
-import mongoose from "mongoose";
+
+let userId: string;
+let token: string;
+let workspaceId: string;
+let account: string;
+let folderId: string;
+
+beforeAll(async () => {
+  await connectDatabase();
+});
+
+afterAll(async () => {
+  await disconnectDatabase();
+});
+
+beforeEach(async () => {
+  const res = await setupTestFolder(userData, workspaceData, workfolderData);
+
+  userId = res.userId;
+  token = res.token;
+  workspaceId = res.workspaceId;
+  account = res.account;
+  folderId = res.folderId;
+});
+
+afterEach(async () => {
+  await clearDatabase();
+});
 
 describe("POST /api/workspace/:account/todo", () => {
-  let userId: string;
-  let token: string;
-  let workspaceId: string;
-  let account: string;
-  let folderId: string;
-
-  beforeAll(async () => {
-    await connectDatabase();
-    const res = await setupTestFolder(userData, workspaceData, workfolderData);
-
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-    folderId = res.folderId;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
-  });
-
   test("Successfully creates a new todo", async () => {
     todoData.workfolderId = folderId;
     todoData.assignments = [{ userId }];
@@ -48,29 +56,17 @@ describe("POST /api/workspace/:account/todo", () => {
 });
 
 describe("PUT /api/workspace/:account/todo/:todoId", () => {
-  let userId: string;
-  let token: string;
   let user2Id: string;
-  let workspaceId: string;
-  let account: string;
-  let folderId: string;
   let todoId: string;
 
-  beforeAll(async () => {
-    await connectDatabase();
+  beforeEach(async () => {
     const userRes = await setupTestUser({
       firstname: "Non User",
       lastname: "Test",
       email: "nuser.t@example.com",
       password: "123",
     });
-    const res = await setupTestFolder(userData, workspaceData, workfolderData);
 
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-    folderId = res.folderId;
     user2Id = userRes.userId;
 
     todoData.workfolderId = folderId;
@@ -82,9 +78,7 @@ describe("PUT /api/workspace/:account/todo/:todoId", () => {
       .send(todoData);
     todoId = todoRes.body.todo._id;
   });
-  afterAll(async () => {
-    await disconnectDatabase();
-  });
+
   test("Successfully updates basic fields", async () => {
     const res = await request(app)
       .put(`/api/workspace/${account}/todo/${todoId}`)
@@ -141,25 +135,6 @@ describe("PUT /api/workspace/:account/todo/:todoId", () => {
 });
 
 describe("DELETE /api/workspace/:account/todo/:todoId", () => {
-  let userId: string;
-  let token: string;
-  let workspaceId: string;
-  let account: string;
-  let folderId: string;
-
-  beforeAll(async () => {
-    await connectDatabase();
-    const res = await setupTestFolder(userData, workspaceData, workfolderData);
-
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-    folderId = res.folderId;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
-  });
   test("Successfully deletes a todo", async () => {
     todoData.workfolderId = folderId;
     todoData.assignments = [{ userId }];

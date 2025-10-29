@@ -3,15 +3,14 @@ import app from "../app";
 
 import { connectDatabase, disconnectDatabase, userData } from "./setup";
 // import userModel from "../models/userModel"
+beforeAll(async () => {
+  await connectDatabase();
+});
+afterAll(async () => {
+  await disconnectDatabase();
+});
 
 describe("POST /api/auth/register", () => {
-  beforeAll(async () => {
-    await connectDatabase();
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
-  });
-
   test("Should create a new user and return 201 when all fields are valid", async () => {
     const res = await request(app).post("/api/auth/register").send(userData);
 
@@ -37,11 +36,7 @@ describe("POST /api/auth/register", () => {
 
 describe("POST /api/auth/login", () => {
   beforeAll(async () => {
-    await connectDatabase();
     await request(app).post("/api/auth/register").send(userData);
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
   });
   test("Should return 200 and a JWT token when email and password are correct", async () => {
     const res = await request(app).post("/api/auth/login").send({

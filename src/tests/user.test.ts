@@ -2,6 +2,7 @@ import request from "supertest";
 import app from "../app";
 
 import {
+  clearDatabase,
   connectDatabase,
   disconnectDatabase,
   setupTestUser,
@@ -10,17 +11,25 @@ import {
   workspaceData,
 } from "./setup";
 
+beforeAll(async () => {
+  await connectDatabase();
+});
+
+afterAll(async () => {
+  await disconnectDatabase();
+});
+
+afterEach(async () => {
+  await clearDatabase();
+});
+
 describe("PUT /api/user/:userId", () => {
   let userId: string;
   let token: string;
   beforeEach(async () => {
-    await connectDatabase();
     const res = await setupTestUser(userData);
     userId = res.userId;
     token = res.token;
-  });
-  afterEach(async () => {
-    await disconnectDatabase();
   });
 
   test("Successfully updates one or more fields", async () => {
@@ -75,14 +84,10 @@ describe("PUT /api/user/:userId", () => {
 describe("PATCH /api/user/:userId/password", () => {
   let userId: string;
   let token: string;
-  beforeAll(async () => {
-    await connectDatabase();
+  beforeEach(async () => {
     const res = await setupTestUser(userData);
     userId = res.userId;
     token = res.token;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
   });
 
   test("Successfully updates the password", async () => {
@@ -132,14 +137,10 @@ describe("PATCH /api/user/:userId/password", () => {
 describe("POST /api/user/:userId/workspace", () => {
   let userId: string;
   let token: string;
-  beforeAll(async () => {
-    await connectDatabase();
+  beforeEach(async () => {
     const res = await setupTestUser(userData);
     userId = res.userId;
     token = res.token;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
   });
 
   test("Should create a new workspace successfully", async () => {
@@ -177,16 +178,12 @@ describe("POST /api/user/:userId/workspace", () => {
 });
 
 describe("POST /api/user/:userId/workspace/:account", () => {
-  //   let userId: string;
-  //   let token: string;
-  //   let workspaceId: string;
   let account: string;
 
   let user2Id: string;
   let token2: string;
 
   beforeEach(async () => {
-    await connectDatabase();
     const res = await setupTestWorkspace(userData, workspaceData);
 
     const user2Res = await setupTestUser({
@@ -196,17 +193,11 @@ describe("POST /api/user/:userId/workspace/:account", () => {
       password: "123",
     });
 
-    // userId = res.userId;
-    // token = res.token;
-    // workspaceId = res.workspaceId;
     account = res.account;
-
     user2Id = user2Res.userId;
     token2 = user2Res.token;
   });
-  afterEach(async () => {
-    await disconnectDatabase();
-  });
+
   test("Successfully adds a new user request to join", async () => {
     const res = await request(app)
       .post(`/api/user/${user2Id}/workspace/${account}`)

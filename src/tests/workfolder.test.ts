@@ -9,28 +9,37 @@ import {
   userData,
   workspaceData,
   workfolderData,
+  clearDatabase,
 } from "./setup";
 import mongoose from "mongoose";
 
+let userId: string;
+let token: string;
+let workspaceId: string;
+let account: string;
+
+beforeAll(async () => {
+  await connectDatabase();
+});
+
+afterAll(async () => {
+  await disconnectDatabase();
+});
+
+beforeEach(async () => {
+  const res = await setupTestWorkspace(userData, workspaceData);
+
+  userId = res.userId;
+  token = res.token;
+  workspaceId = res.workspaceId;
+  account = res.account;
+});
+
+afterEach(async () => {
+  await clearDatabase();
+});
+
 describe("POST /api/workspace/:account/workfolder", () => {
-  let userId: string;
-  let token: string;
-  let workspaceId: string;
-  let account: string;
-
-  beforeAll(async () => {
-    await connectDatabase();
-    const res = await setupTestWorkspace(userData, workspaceData);
-
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
-  });
-
   test("Successfully create folder", async () => {
     const res = await request(app)
       .post(`/api/workspace/${account}/workfolder`)
@@ -57,23 +66,6 @@ describe("POST /api/workspace/:account/workfolder", () => {
 });
 
 describe("PATCH /api/workspace/:account/workfolder/:folderId/title", () => {
-  let userId: string;
-  let token: string;
-  let workspaceId: string;
-  let account: string;
-
-  beforeAll(async () => {
-    await connectDatabase();
-    const res = await setupTestWorkspace(userData, workspaceData);
-    userId = res.userId;
-    token = res.token;
-    workspaceId = res.workspaceId;
-    account = res.account;
-  });
-  afterAll(async () => {
-    await disconnectDatabase();
-  });
-
   test("Successfully update folder title", async () => {
     const folderRes = await request(app)
       .post(`/api/workspace/${account}/workfolder`)
