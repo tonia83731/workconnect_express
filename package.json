@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "dev": "dotenv -e .env -- cross-env NODE_ENV=dev tsx --watch src/server.ts",
+    "dev": "dotenv -e .env -- cross-env NODE_ENV=dev tsx --watch src/server.dev.ts",
     "test": "dotenv -e .env -- cross-env NODE_ENV=test jest --testTimeout=15000",
-    "start": "node dist/server.js",
+    "start": "node dist/server.prod.js",
     "build": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",

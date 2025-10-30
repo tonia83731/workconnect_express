@@ -43,5 +43,5 @@
     // "skipLibCheck": true,
   },
   "include": ["src/**/*.ts", "*.ts"],
-  "exclude": ["dist"]
+  "exclude": ["dist", "src/tests", "src/server.dev.ts"]
 }
