@@ -1,21 +1,21 @@
 import express from "express";
 const router = express.Router();
 
-import authRouter from "./modules/authRoute.js";
-import userRouter from "./modules/userRoute.js";
-import workspaceRouter from "./modules/workspaceRoute.js";
-import workspaceAuthRouter from "./modules/workspaceAuthRoute.js";
-import workfolderRouter from "./modules/workfolderRoute.js";
-import todoRouter from "./modules/todoRoute.js";
-import voteRouter from "./modules/voteRoute.js";
-import voteAuthRouter from "./modules/voteAuthRoute.js";
-import resultRouter from "./modules/resultRoute.js";
+import authRouter from "./modules/authRoute";
+import userRouter from "./modules/userRoute";
+import workspaceRouter from "./modules/workspaceRoute";
+import workspaceAuthRouter from "./modules/workspaceAuthRoute";
+import workfolderRouter from "./modules/workfolderRoute";
+import todoRouter from "./modules/todoRoute";
+import voteRouter from "./modules/voteRoute";
+import voteAuthRouter from "./modules/voteAuthRoute";
+import resultRouter from "./modules/resultRoute";
 
 import {
   authenticated,
   workspaceAdminAuthenticated,
   workspaceAuthenticated,
-} from "../middleware/apiAuth.js";
+} from "../middleware/apiAuth";
 
 router.use("/auth", authRouter);
 router.use("/user", authenticated, userRouter);
@@ -39,8 +39,18 @@ router.use(
   workfolderRouter
 );
 
-router.use("/workspace/:account/todo", authenticated, workspaceAuthenticated, todoRouter);
-router.use("/workspace/:account/vote", authenticated, workspaceAuthenticated, voteRouter);
+router.use(
+  "/workspace/:account/todo",
+  authenticated,
+  workspaceAuthenticated,
+  todoRouter
+);
+router.use(
+  "/workspace/:account/vote",
+  authenticated,
+  workspaceAuthenticated,
+  voteRouter
+);
 router.use(
   "/workspace/:account/vote/admin",
   authenticated,

@@ -1,14 +1,14 @@
-import type { Request, Response, NextFunction } from "express";
-import userModel from "../models/userModel.js";
-import workspaceModel from "../models/workspaceModel.js";
-import type { IWorkspaceMember, IWorkspace } from "../type.js";
+import type { Request, Response } from "express";
+import workspaceModel from "../models/workspaceModel";
+import type { IWorkspaceMember, IWorkspace } from "../type";
+import todoModel from "../models/todoModel";
+import workfolderModel from "../models/workfolderModel";
+import voteModel from "../models/voteModel";
+import resultModel from "../models/resultModel";
+import { handleError } from "../helpers/errorHelpers";
 
 const workspaceController = {
-  getWorkspaceByUserId: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  getWorkspaceByUserId: async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       const workspaces = await workspaceModel
@@ -19,16 +19,16 @@ const workspaceController = {
         OK: true,
         workspaces,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
-  createWorkspace: async (req: Request, res: Response, next: NextFunction) => {
+  createWorkspace: async (req: Request, res: Response) => {
     try {
-      const userId = req.params.userId as string
+      const userId = req.params.userId as string;
       const { title, account } = req.body;
 
       const isAccountExisted = await workspaceModel.findOne({ account });
@@ -55,23 +55,17 @@ const workspaceController = {
         OK: true,
         workspace,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
 
-  getWorkspaceByAccount: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  getWorkspaceByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
-
-      console.log(account);
 
       const workspace = await workspaceController.fetchWorkspaceByAccount(
         account as string
@@ -88,11 +82,7 @@ const workspaceController = {
     }
   },
 
-  updateWorkspaceTitleByAccount: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  updateWorkspaceTitleByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const { title } = req.body;
@@ -104,17 +94,13 @@ const workspaceController = {
       );
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: error instanceof Error && error.message,
       });
     }
   },
-  updateWorkspaceSlackByAccount: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  updateWorkspaceSlackByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
       const { slackUrl } = req.body;
@@ -126,50 +112,64 @@ const workspaceController = {
       );
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: error instanceof Error && error.message,
       });
     }
   },
-  deleteWorkspaceByAccount: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  deleteWorkspaceByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
 
-      await workspaceModel.findOneAndDelete({ account });
+      const workspace = await workspaceModel.findOne({ account });
+      if (!workspace) {
+        return res.status(404).json({
+          OK: false,
+          message: "Workspace not found.",
+        });
+      }
 
-      return res.status(200).json({ OK: true, message: "Workspace deleted" });
-    } catch (error: any) {
+      const workspaceId = workspace?._id.toString();
+
+      await Promise.all([
+        todoModel.deleteMany({ workspaceId }),
+        workfolderModel.deleteMany({ workspaceId }),
+        voteModel.deleteMany({ workspaceId }),
+        resultModel.deleteMany({ workspaceId }),
+      ]);
+
+      await workspace.deleteOne({ account });
+
+      return res
+        .status(200)
+        .json({ OK: true, message: "Workspace and related items are deleted" });
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: error instanceof Error && error.message,
       });
     }
   },
-
-  // pending
-  userAskEnterWorkspace: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  userAskEnterWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
 
-      const member = await  workspaceController.fetchWorkspaceMemberById(
-          account as string,
-          userId as string
-        )
+      const member = await workspaceController.fetchWorkspaceMemberById(
+        account as string,
+        userId as string
+      );
       // console.log(member)
-      if (
-       member !== null
-      ) {
+      if (member !== null && !member.isPending) {
         return res.status(200).json({
           OK: false,
           message: "User is already member",
+        });
+      }
+
+      if (member !== null && member.isPending) {
+        return res.status(200).json({
+          OK: false,
+          message: "Please wait the admin to approve",
         });
       }
 
@@ -186,18 +186,14 @@ const workspaceController = {
       );
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error: any) {
+    } catch (error: unknown) {
       return res.status(500).json({
-        message: error.message(),
+        message: error instanceof Error && error.message,
       });
     }
   },
 
-  removeMemberFromWorkspace: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  removeMemberFromWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
 
@@ -216,26 +212,28 @@ const workspaceController = {
         { new: true }
       );
 
+      await todoModel.updateMany(
+        { workspaceId: workspace?._id.toString() },
+        { $pull: { assignments: { userId } } }
+      );
+      await resultModel.deleteMany({ workspaceId: workspace?._id.toString() });
+
       return res.status(200).json({ OK: true, workspace });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
-  updateMemberStatusInWorkspace: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  updateMemberStatusInWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
       const { isAdmin, isPending } = req.body;
 
       let workspace;
 
-      if (isAdmin) {
+      if (isAdmin !== undefined) {
         workspace = await workspaceModel.findOneAndUpdate(
           { account, "members.userId": userId },
           {
@@ -247,7 +245,7 @@ const workspaceController = {
         );
       }
 
-      if (isPending) {
+      if (isPending !== undefined) {
         workspace = await workspaceModel.findOneAndUpdate(
           { account, "members.userId": userId },
           {
@@ -260,10 +258,10 @@ const workspaceController = {
       }
 
       return res.status(200).json({ OK: true, workspace });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   }, // isAdmin, isPending
@@ -282,8 +280,11 @@ const workspaceController = {
 
       if (!workspace) return null;
       return workspace as IWorkspace;
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to fetch workspace by account");
+    } catch (error: unknown) {
+      throw new Error(
+        (error instanceof Error && error.message) ||
+          "Failed to fetch workspace by account"
+      );
     }
   },
 
@@ -303,8 +304,10 @@ const workspaceController = {
         return null;
 
       return workspace.members[0] as IWorkspaceMember;
-    } catch (error: any) {
-      throw new Error(error.message || "Failed to check member");
+    } catch (error: unknown) {
+      throw new Error(
+        (error instanceof Error && error.message) || "Failed to check member"
+      );
     }
   },
 };

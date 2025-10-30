@@ -1,7 +1,7 @@
 import express from "express";
 const router = express.Router({ mergeParams: true });
 
-import workspaceController from "../../controllers/workspaceController.js";
+import workspaceController from "../../controllers/workspaceController";
 
 router.delete("/:userId", workspaceController.removeMemberFromWorkspace);
 router.patch(

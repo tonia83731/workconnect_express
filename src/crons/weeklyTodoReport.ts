@@ -1,9 +1,9 @@
 import nodeCron from "node-cron";
 import axios from "axios";
 
-import workspaceModel from "../models/workspaceModel.js";
-import todoModel from "../models/todoModel.js";
-import type { ITodo } from "../type.js";
+import workspaceModel from "../models/workspaceModel";
+import todoModel from "../models/todoModel";
+import type { ITodo } from "../type";
 
 const scheduleWeeklyTodoReport = () => {
   nodeCron.schedule("* 16 * * 5", async () => {

@@ -1,15 +1,29 @@
-import type { Request, Response, NextFunction } from "express";
+import type { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import userModel from "../models/userModel.js";
+import userModel from "../models/userModel";
 import jwt from "jsonwebtoken";
-import workspaceModel from "../models/workspaceModel.js";
-import { isSelf } from "../helpers/authHelper.js";
-import { platform } from "os";
+import workspaceModel from "../models/workspaceModel";
+import todoModel from "../models/todoModel";
+import voteModel from "../models/voteModel";
+import resultModel from "../models/resultModel";
+import { isSelf } from "../helpers/authHelper";
+import { handleError } from "../helpers/errorHelpers";
 
 const userController = {
-  register: async (req: Request, res: Response, next: NextFunction) => {
+  register: async (req: Request, res: Response) => {
     try {
       const { firstname, lastname, email, password } = req.body;
+
+      if (
+        firstname.trim() === "" ||
+        lastname.trim() === "" ||
+        email.trim() === "" ||
+        password.trim() === ""
+      )
+        return res.status(400).json({
+          OK: false,
+          message: "All fields is required.",
+        });
 
       const isEmailExisted = await userModel.findOne({ email });
       if (isEmailExisted !== null) {
@@ -31,16 +45,22 @@ const userController = {
       return res.status(201).json({
         OK: true,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
-  login: async (req: Request, res: Response, next: NextFunction) => {
+  login: async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
+
+      if (email.trim() === "" || password.trim() === "")
+        return res.status(400).json({
+          OK: false,
+          message: "All fields is required.",
+        });
 
       const user = await userModel.findOne({ email });
 
@@ -61,7 +81,7 @@ const userController = {
       const payload = {
         _id: userJson._id,
         email: userJson.email,
-        platformMode: userJson.platformMode
+        platformMode: userJson.platformMode,
       };
 
       const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
@@ -75,15 +95,15 @@ const userController = {
           token,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
 
-  getUserById: async (req: Request, res: Response, next: NextFunction) => {
+  getUserById: async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       const user = await userModel.findById(userId).select("-password");
@@ -97,14 +117,14 @@ const userController = {
         OK: true,
         user,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
-  updateUserById: async (req: Request, res: Response, next: NextFunction) => {
+  updateUserById: async (req: Request, res: Response) => {
     try {
       const { firstname, lastname, email } = req.body;
       const tokenUserId = req.user?._id.toString();
@@ -123,8 +143,8 @@ const userController = {
           message: "User not found",
         });
 
-      user.firstname = firstname ?? user.firstname
-      user.lastname = lastname ?? user.lastname
+      user.firstname = firstname ?? user.firstname;
+      user.lastname = lastname ?? user.lastname;
       user.email = email ?? user.email;
 
       await user.save();
@@ -136,21 +156,17 @@ const userController = {
           firstname: user.firstname,
           lastname: user.lastname,
           email: user.email,
-          platforMode: user.platformMode
+          platforMode: user.platformMode,
         },
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
-  updateUserPasswordById: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  updateUserPasswordById: async (req: Request, res: Response) => {
     try {
       const { originalPassword, newPassword } = req.body;
 
@@ -188,18 +204,14 @@ const userController = {
         OK: true,
         message: "Password updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
-  updateUserPlatformModeById: async (
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
+  updateUserPlatformModeById: async (req: Request, res: Response) => {
     try {
       const tokenUserId = req.user?._id.toString();
       const userId = req.params.userId as string;
@@ -216,8 +228,6 @@ const userController = {
           OK: false,
           message: "User not found",
         });
-
-      
 
       user.platformMode = user.platformMode === "dark" ? "light" : "dark";
       await user.save();
@@ -226,14 +236,14 @@ const userController = {
         OK: true,
         message: "Platform mode updated successfully",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
-  deleteUserById: async (req: Request, res: Response, next: NextFunction) => {
+  deleteUserById: async (req: Request, res: Response) => {
     try {
       const tokenUserId = req.user?._id.toString();
       const userId = req.params.userId as string;
@@ -251,23 +261,63 @@ const userController = {
           message: "User not found",
         });
 
+      // remove user from workspace member --> if is admin than cannot delete
+      const adminWorkspaces = await workspaceModel.find({
+        "members.userId": userId,
+        "members.isAdmin": true,
+      });
+      if (adminWorkspaces.length > 0)
+        return res.status(400).json({
+          OK: false,
+          message:
+            "Cannot delete an admin ser. Please transfer admin role first.",
+        });
+
+      await workspaceModel.updateMany(
+        {
+          "members.userId": userId,
+        },
+        {
+          $pull: { members: { userId } },
+        }
+      );
+
+      // remove todo assignment
+      await todoModel.updateMany(
+        {
+          "assignments.userId": userId,
+        },
+        {
+          $pull: {
+            assignments: { userId },
+          },
+        }
+      );
+      // update vote creatorId == userId become null
+      await voteModel.updateMany(
+        {
+          creatorId: userId,
+        },
+        {
+          $set: {
+            creatorId: null,
+          },
+        }
+      );
+      // remove result by userId
+      await resultModel.deleteMany({ userId });
+
       // Delete user
       await user.deleteOne();
-
-      // Remove user from all workspaces
-      await workspaceModel.updateMany(
-        { "members.userId": userId },
-        { $pull: { members: { userId } } }
-      );
 
       return res.status(200).json({
         OK: true,
         message: "User deleted successfully and removed from all workspaces",
       });
-    } catch (error) {
+    } catch (error: unknown) {
       return res.status(500).json({
         OK: false,
-        message: error,
+        message: handleError(error),
       });
     }
   },
