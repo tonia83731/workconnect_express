@@ -20,8 +20,16 @@ export interface IWorkspace {
   title: string;
   account: string;
   members: WorkspaceMemberType[];
-  slackUrl: string;
+  notifications: {
+    slack: NotificationType;
+    discord: NotificationType;
+  };
 }
+
+export type NotificationType = {
+  enable: boolean;
+  url: string;
+};
 
 export interface IWorkspaceMember {
   userId: string;

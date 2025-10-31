@@ -9,7 +9,10 @@ router.patch(
   workspaceController.updateMemberStatusInWorkspace
 );
 router.patch("/title", workspaceController.updateWorkspaceTitleByAccount);
-router.patch("/slack-url", workspaceController.updateWorkspaceSlackByAccount);
+router.patch(
+  "/notifications",
+  workspaceController.updateWorkspaceNotificationSettingsByAccount
+);
 router.delete("", workspaceController.deleteWorkspaceByAccount);
 
 export default router;

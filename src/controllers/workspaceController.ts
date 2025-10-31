@@ -1,11 +1,12 @@
 import type { Request, Response } from "express";
 import workspaceModel from "../models/workspaceModel";
-import type { IWorkspaceMember, IWorkspace } from "../type";
+import type { IWorkspaceMember, IWorkspace, NotificationType } from "../type";
 import todoModel from "../models/todoModel";
 import workfolderModel from "../models/workfolderModel";
 import voteModel from "../models/voteModel";
 import resultModel from "../models/resultModel";
 import { handleError } from "../helpers/errorHelpers";
+import { channel } from "diagnostics_channel";
 
 const workspaceController = {
   getWorkspaceByUserId: async (req: Request, res: Response) => {
@@ -100,17 +101,64 @@ const workspaceController = {
       });
     }
   },
-  updateWorkspaceSlackByAccount: async (req: Request, res: Response) => {
+  // updateWorkspaceSlackByAccount: async (req: Request, res: Response) => {
+  //   try {
+  //     const { account } = req.params;
+  //     const { slackUrl } = req.body;
+
+  //     const workspace = await workspaceModel.findOneAndUpdate(
+  //       { account },
+  //       { $set: { slackUrl } },
+  //       { new: true } // return AFTER update data
+  //     );
+
+  //     return res.status(200).json({ OK: true, workspace });
+  //   } catch (error: unknown) {
+  //     return res.status(500).json({
+  //       message: error instanceof Error && error.message,
+  //     });
+  //   }
+  // },
+
+  updateWorkspaceNotificationSettingsByAccount: async (
+    req: Request,
+    res: Response
+  ) => {
     try {
       const { account } = req.params;
-      const { slackUrl } = req.body;
+      const { notifications } = req.body;
 
-      const workspace = await workspaceModel.findOneAndUpdate(
-        { account },
-        { $set: { slackUrl } },
-        { new: true } // return AFTER update data
-      );
+      const workspace = await workspaceModel.findOne({
+        account,
+      });
 
+      if (!workspace)
+        return res.status(404).json({
+          OK: false,
+          message: "Workspace not found",
+        });
+
+      if (notifications && typeof notifications === "object") {
+        for (const channel in Object.keys(notifications)) {
+          if (!workspace.notifications) return;
+          if (
+            !workspace.notifications[
+              channel as keyof typeof workspace.notifications
+            ]
+          )
+            return;
+
+          const noti = workspace.notifications[
+            channel as keyof typeof workspace.notifications
+          ] as NotificationType;
+          const input = notifications[channel];
+
+          noti.enable = input.enable ?? noti.enable;
+          noti.url = input.url ?? noti.url;
+        }
+      }
+
+      await workspace.save();
       return res.status(200).json({ OK: true, workspace });
     } catch (error: unknown) {
       return res.status(500).json({

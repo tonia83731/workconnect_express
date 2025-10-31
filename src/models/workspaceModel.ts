@@ -31,7 +31,29 @@ const workspaceSchema = new Schema(
         },
       },
     ],
-    slackUrl: { type: String, default: null },
+    // slackUrl: { type: String, default: null },
+    notifications: {
+      slack: {
+        enable: {
+          type: Boolean,
+          default: false,
+        },
+        url: {
+          type: String,
+          default: null,
+        },
+      },
+      discord: {
+        enable: {
+          type: Boolean,
+          default: false,
+        },
+        url: {
+          type: String,
+          default: null,
+        },
+      },
+    },
   },
   {
     timestamps: true,
