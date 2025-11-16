@@ -20,8 +20,11 @@ const userSchema = new Schema(
     password: {
       type: String,
       required: true,
-      unique: true,
       minlength: 4,
+    },
+    avatar: {
+      type: String,
+      default: null,
     },
     platformMode: {
       type: String,

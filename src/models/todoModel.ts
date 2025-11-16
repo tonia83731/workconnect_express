@@ -19,6 +19,13 @@ const todoSchema = new Schema(
       ref: "Workfolder",
       required: true,
     },
+    tags: {
+      tagId: {
+        type: Schema.Types.ObjectId,
+        ref: "Tag",
+        default: null,
+      }
+    },
     status: {
       type: String,
       enum: ["pending", "processing", "completed"],
@@ -47,6 +54,26 @@ const todoSchema = new Schema(
           ref: "User",
         },
       },
+    ],
+    files:[
+      {
+        key: {
+          type: String,
+          required: true,
+        },
+        url: {
+          type: String,
+          default: null
+        },
+        filename: {
+          type: String,
+          required: true,
+        },
+        type: {
+          type: String,
+          required: true,
+        }
+      }
     ],
     order: {
       type: Number,

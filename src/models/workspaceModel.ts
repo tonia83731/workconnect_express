@@ -53,6 +53,16 @@ const workspaceSchema = new Schema(
           default: null,
         },
       },
+      teams: {
+        enable: {
+          type: Boolean,
+          default: false,
+        },
+        url: {
+          type: String,
+          default: null,
+        },
+      },
     },
   },
   {

@@ -5,7 +5,6 @@ import {
   clearDatabase,
   connectDatabase,
   disconnectDatabase,
-  setupTestUser,
   setupTestWorkspace,
   userData,
   workspaceData,
