@@ -52,6 +52,7 @@ const userController = {
       });
     }
   },
+
   login: async (req: Request, res: Response) => {
     try {
       const { email, password } = req.body;
@@ -124,9 +125,10 @@ const userController = {
       });
     }
   },
+
   updateUserById: async (req: Request, res: Response) => {
     try {
-      const { firstname, lastname, email } = req.body;
+      const { firstname, lastname, email, avatar } = req.body;
       const tokenUserId = req.user?._id.toString();
       const userId = req.params.userId as string;
 
@@ -146,6 +148,7 @@ const userController = {
       user.firstname = firstname ?? user.firstname;
       user.lastname = lastname ?? user.lastname;
       user.email = email ?? user.email;
+      user.avatar = avatar ?? user.avatar;
 
       await user.save();
 
@@ -156,6 +159,7 @@ const userController = {
           firstname: user.firstname,
           lastname: user.lastname,
           email: user.email,
+          avatar: user.avatar,
           platforMode: user.platformMode,
         },
       });

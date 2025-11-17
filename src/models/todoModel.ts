@@ -19,12 +19,10 @@ const todoSchema = new Schema(
       ref: "Workfolder",
       required: true,
     },
-    tags: {
-      tagId: {
-        type: Schema.Types.ObjectId,
-        ref: "Tag",
-        default: null,
-      }
+    tagId: {
+      type: Schema.Types.ObjectId,
+      ref: "Tag",
+      default: null,
     },
     status: {
       type: String,

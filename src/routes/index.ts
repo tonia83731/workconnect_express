@@ -7,6 +7,7 @@ import workspaceRouter from "./modules/workspaceRoute";
 import workspaceAuthRouter from "./modules/workspaceAuthRoute";
 import workfolderRouter from "./modules/workfolderRoute";
 import todoRouter from "./modules/todoRoute";
+import tagRouter from "./modules/tagRoute";
 import voteRouter from "./modules/voteRoute";
 import voteAuthRouter from "./modules/voteAuthRoute";
 import resultRouter from "./modules/resultRoute";
@@ -45,6 +46,12 @@ router.use(
   workspaceAuthenticated,
   todoRouter
 );
+router.use(
+  "/workspace/:account/tag",
+  authenticated,
+  workspaceAuthenticated,
+  tagRouter
+)
 router.use(
   "/workspace/:account/vote",
   authenticated,

@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
 import workspaceModel from "../models/workspaceModel";
-import type { IWorkspaceMember, IWorkspace, NotificationType } from "../type";
+import type { IWorkspaceMember, NotificationType } from "../type";
 import todoModel from "../models/todoModel";
 import workfolderModel from "../models/workfolderModel";
 import voteModel from "../models/voteModel";
 import resultModel from "../models/resultModel";
 import { handleError } from "../helpers/errorHelpers";
-import { channel } from "diagnostics_channel";
+import { fetchWorkspaceByAccount, fetchWorkspaceMemberById } from "../utils/fetchWorkspace";
 
 const workspaceController = {
   getWorkspaceByUserId: async (req: Request, res: Response) => {
@@ -68,7 +68,7 @@ const workspaceController = {
     try {
       const { account } = req.params;
 
-      const workspace = await workspaceController.fetchWorkspaceByAccount(
+      const workspace = await fetchWorkspaceByAccount(
         account as string
       );
 
@@ -101,24 +101,6 @@ const workspaceController = {
       });
     }
   },
-  // updateWorkspaceSlackByAccount: async (req: Request, res: Response) => {
-  //   try {
-  //     const { account } = req.params;
-  //     const { slackUrl } = req.body;
-
-  //     const workspace = await workspaceModel.findOneAndUpdate(
-  //       { account },
-  //       { $set: { slackUrl } },
-  //       { new: true } // return AFTER update data
-  //     );
-
-  //     return res.status(200).json({ OK: true, workspace });
-  //   } catch (error: unknown) {
-  //     return res.status(500).json({
-  //       message: error instanceof Error && error.message,
-  //     });
-  //   }
-  // },
 
   updateWorkspaceNotificationSettingsByAccount: async (
     req: Request,
@@ -166,6 +148,7 @@ const workspaceController = {
       });
     }
   },
+
   deleteWorkspaceByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
@@ -198,11 +181,12 @@ const workspaceController = {
       });
     }
   },
+
   userAskEnterWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
 
-      const member = await workspaceController.fetchWorkspaceMemberById(
+      const member = await fetchWorkspaceMemberById(
         account as string,
         userId as string
       );
@@ -246,7 +230,7 @@ const workspaceController = {
       const { userId, account } = req.params;
 
       if (
-        !(await workspaceController.fetchWorkspaceMemberById(
+        !(await fetchWorkspaceMemberById(
           account as string,
           userId as string
         ))
@@ -274,6 +258,7 @@ const workspaceController = {
       });
     }
   },
+
   updateMemberStatusInWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
@@ -313,51 +298,6 @@ const workspaceController = {
       });
     }
   }, // isAdmin, isPending
-
-  // ==========================================
-
-  fetchWorkspaceByAccount: async (
-    workspaceAccount: string
-  ): Promise<IWorkspace | null> => {
-    try {
-      const workspace = await workspaceModel
-        .findOne({
-          account: workspaceAccount,
-        })
-        .lean();
-
-      if (!workspace) return null;
-      return workspace as IWorkspace;
-    } catch (error: unknown) {
-      throw new Error(
-        (error instanceof Error && error.message) ||
-          "Failed to fetch workspace by account"
-      );
-    }
-  },
-
-  fetchWorkspaceMemberById: async (
-    workspaceAccount: string,
-    userId: string
-  ): Promise<IWorkspaceMember | null> => {
-    try {
-      const workspace = await workspaceModel
-        .findOne(
-          { account: workspaceAccount, "members.userId": userId },
-          { "members.$": 1 } // only return the matching member
-        )
-        .lean();
-
-      if (!workspace || !workspace.members || workspace.members.length === 0)
-        return null;
-
-      return workspace.members[0] as IWorkspaceMember;
-    } catch (error: unknown) {
-      throw new Error(
-        (error instanceof Error && error.message) || "Failed to check member"
-      );
-    }
-  },
 };
 
 export default workspaceController;
