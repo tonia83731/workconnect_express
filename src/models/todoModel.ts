@@ -19,12 +19,10 @@ const todoSchema = new Schema(
       ref: "Workfolder",
       required: true,
     },
-    tags: {
-      tagId: {
-        type: Schema.Types.ObjectId,
-        ref: "Tag",
-        default: null,
-      }
+    tagId: {
+      type: Schema.Types.ObjectId,
+      ref: "Tag",
+      default: null,
     },
     status: {
       type: String,
@@ -55,7 +53,7 @@ const todoSchema = new Schema(
         },
       },
     ],
-    files:[
+    files: [
       {
         key: {
           type: String,
@@ -63,7 +61,7 @@ const todoSchema = new Schema(
         },
         url: {
           type: String,
-          default: null
+          default: null,
         },
         filename: {
           type: String,
@@ -72,8 +70,8 @@ const todoSchema = new Schema(
         type: {
           type: String,
           required: true,
-        }
-      }
+        },
+      },
     ],
     order: {
       type: Number,

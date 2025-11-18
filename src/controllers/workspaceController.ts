@@ -7,6 +7,10 @@ import voteModel from "../models/voteModel";
 import resultModel from "../models/resultModel";
 import { handleError } from "../helpers/errorHelpers";
 import { channel } from "diagnostics_channel";
+import {
+  fetchWorkspaceByAccount,
+  fetchWorkspaceMemberById,
+} from "../utils/fetchWorkspace";
 
 const workspaceController = {
   getWorkspaceByUserId: async (req: Request, res: Response) => {
@@ -68,9 +72,7 @@ const workspaceController = {
     try {
       const { account } = req.params;
 
-      const workspace = await workspaceController.fetchWorkspaceByAccount(
-        account as string
-      );
+      const workspace = await fetchWorkspaceByAccount(account as string);
 
       return res.status(200).json({
         OK: true,
@@ -202,7 +204,7 @@ const workspaceController = {
     try {
       const { userId, account } = req.params;
 
-      const member = await workspaceController.fetchWorkspaceMemberById(
+      const member = await fetchWorkspaceMemberById(
         account as string,
         userId as string
       );
@@ -246,10 +248,7 @@ const workspaceController = {
       const { userId, account } = req.params;
 
       if (
-        !(await workspaceController.fetchWorkspaceMemberById(
-          account as string,
-          userId as string
-        ))
+        !(await fetchWorkspaceMemberById(account as string, userId as string))
       ) {
         return res.status(404).json({ OK: false, message: "Member not found" });
       }
@@ -313,51 +312,6 @@ const workspaceController = {
       });
     }
   }, // isAdmin, isPending
-
-  // ==========================================
-
-  fetchWorkspaceByAccount: async (
-    workspaceAccount: string
-  ): Promise<IWorkspace | null> => {
-    try {
-      const workspace = await workspaceModel
-        .findOne({
-          account: workspaceAccount,
-        })
-        .lean();
-
-      if (!workspace) return null;
-      return workspace as IWorkspace;
-    } catch (error: unknown) {
-      throw new Error(
-        (error instanceof Error && error.message) ||
-          "Failed to fetch workspace by account"
-      );
-    }
-  },
-
-  fetchWorkspaceMemberById: async (
-    workspaceAccount: string,
-    userId: string
-  ): Promise<IWorkspaceMember | null> => {
-    try {
-      const workspace = await workspaceModel
-        .findOne(
-          { account: workspaceAccount, "members.userId": userId },
-          { "members.$": 1 } // only return the matching member
-        )
-        .lean();
-
-      if (!workspace || !workspace.members || workspace.members.length === 0)
-        return null;
-
-      return workspace.members[0] as IWorkspaceMember;
-    } catch (error: unknown) {
-      throw new Error(
-        (error instanceof Error && error.message) || "Failed to check member"
-      );
-    }
-  },
 };
 
 export default workspaceController;
