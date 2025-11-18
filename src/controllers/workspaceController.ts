@@ -1,12 +1,11 @@
 import type { Request, Response } from "express";
 import workspaceModel from "../models/workspaceModel";
-import type { IWorkspaceMember, IWorkspace, NotificationType } from "../type";
+import type { IWorkspaceMember, NotificationType } from "../type";
 import todoModel from "../models/todoModel";
 import workfolderModel from "../models/workfolderModel";
 import voteModel from "../models/voteModel";
 import resultModel from "../models/resultModel";
 import { handleError } from "../helpers/errorHelpers";
-import { channel } from "diagnostics_channel";
 import {
   fetchWorkspaceByAccount,
   fetchWorkspaceMemberById,
@@ -71,7 +70,6 @@ const workspaceController = {
   getWorkspaceByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
-
       const workspace = await fetchWorkspaceByAccount(account as string);
 
       return res.status(200).json({
@@ -103,24 +101,6 @@ const workspaceController = {
       });
     }
   },
-  // updateWorkspaceSlackByAccount: async (req: Request, res: Response) => {
-  //   try {
-  //     const { account } = req.params;
-  //     const { slackUrl } = req.body;
-
-  //     const workspace = await workspaceModel.findOneAndUpdate(
-  //       { account },
-  //       { $set: { slackUrl } },
-  //       { new: true } // return AFTER update data
-  //     );
-
-  //     return res.status(200).json({ OK: true, workspace });
-  //   } catch (error: unknown) {
-  //     return res.status(500).json({
-  //       message: error instanceof Error && error.message,
-  //     });
-  //   }
-  // },
 
   updateWorkspaceNotificationSettingsByAccount: async (
     req: Request,
@@ -168,6 +148,7 @@ const workspaceController = {
       });
     }
   },
+
   deleteWorkspaceByAccount: async (req: Request, res: Response) => {
     try {
       const { account } = req.params;
@@ -200,6 +181,7 @@ const workspaceController = {
       });
     }
   },
+
   userAskEnterWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;
@@ -273,6 +255,7 @@ const workspaceController = {
       });
     }
   },
+
   updateMemberStatusInWorkspace: async (req: Request, res: Response) => {
     try {
       const { userId, account } = req.params;

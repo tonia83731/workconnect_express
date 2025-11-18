@@ -55,6 +55,12 @@ router.use(
 );
 
 router.use(
+  "/workspace/:account/tag",
+  authenticated,
+  workspaceAuthenticated,
+  tagRouter
+)
+router.use(
   "/workspace/:account/vote",
   authenticated,
   workspaceAuthenticated,

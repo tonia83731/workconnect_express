@@ -1,9 +1,9 @@
 import type { Request, Response } from "express";
 import voteModel from "../models/voteModel";
 import resultModel from "../models/resultModel";
-import workspaceController from "./workspaceController";
 import workspaceModel from "../models/workspaceModel";
 import { handleError } from "../helpers/errorHelpers";
+import { fetchWorkspaceByAccount } from "../utils/fetchWorkspace";
 
 const voteController = {
   getWorkspaceVoteByWorkspaceAccount: async (
@@ -14,7 +14,7 @@ const voteController = {
       // const userId = req.user?._id as string;
       const { account } = req.params;
 
-      const workspace = await workspaceController.fetchWorkspaceByAccount(
+      const workspace = await fetchWorkspaceByAccount(
         account as string
       );
 

@@ -66,6 +66,7 @@ const todoController = {
         deadline,
         checklists,
         assignments,
+        tagId,
       } = req.body;
 
       const countItems = await todoModel.countDocuments({
@@ -82,6 +83,7 @@ const todoController = {
         deadline,
         checklists,
         assignments,
+        tagId,
         order: countItems + 1,
       });
       return res.status(201).json({
@@ -106,6 +108,7 @@ const todoController = {
         deadline,
         checklists,
         assignments,
+        tagId,
       } = req.body;
 
       const todo = await todoModel.findById(todoId);
@@ -120,6 +123,7 @@ const todoController = {
       todo.status = status ?? todo.status;
       todo.note = note ?? todo.note;
       todo.deadline = deadline ?? todo.deadline;
+      todo.tagId = tagId;
 
       if (checklists && Array.isArray(checklists)) {
         // Remove all existing checklists and add new ones

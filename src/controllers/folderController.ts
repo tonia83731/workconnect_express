@@ -63,7 +63,6 @@ const folderController = {
         folder,
       });
     } catch (error) {
-      console.error(error);
       return res.status(500).json({
         OK: false,
         message: error,
@@ -74,7 +73,6 @@ const folderController = {
     try {
       const { account } = req.params;
       const { title } = req.body;
-
       const workspace = await fetchWorkspaceByAccount(account as string);
       const workspaceId = workspace && workspace._id;
 
