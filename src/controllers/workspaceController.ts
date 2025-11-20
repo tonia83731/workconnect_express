@@ -108,7 +108,7 @@ const workspaceController = {
   ) => {
     try {
       const { account } = req.params;
-      const { notifications } = req.body;
+      const { notification } = req.body;
 
       const workspace = await workspaceModel.findOne({
         account,
@@ -120,25 +120,27 @@ const workspaceController = {
           message: "Workspace not found",
         });
 
-      if (notifications && typeof notifications === "object") {
-        for (const channel in Object.keys(notifications)) {
-          if (!workspace.notifications) return;
-          if (
-            !workspace.notifications[
-              channel as keyof typeof workspace.notifications
-            ]
-          )
-            return;
+      // if (notifications && typeof notifications === "object") {
+      //   for (const channel in Object.keys(notifications)) {
+      //     if (!workspace.notifications) return;
+      //     if (
+      //       !workspace.notifications[
+      //         channel as keyof typeof workspace.notifications
+      //       ]
+      //     )
+      //       return;
 
-          const noti = workspace.notifications[
-            channel as keyof typeof workspace.notifications
-          ] as NotificationType;
-          const input = notifications[channel];
+      //     const noti = workspace.notifications[
+      //       channel as keyof typeof workspace.notifications
+      //     ] as NotificationType;
+      //     const input = notifications[channel];
 
-          noti.enable = input.enable ?? noti.enable;
-          noti.url = input.url ?? noti.url;
-        }
-      }
+      //     noti.enable = input.enable ?? noti.enable;
+      //     noti.url = input.url ?? noti.url;
+      //   }
+      // }
+
+      workspace.notification = notification;
 
       await workspace.save();
       return res.status(200).json({ OK: true, workspace });
